@@ -983,8 +983,8 @@ function renderQ(q,box,o){o=o||{};const st=o.state||{};const locked=!!o.locked;l
   paint();if(o.reveal||locked){grade();}
  }
  if(q.t==='match'){
-  st.vals=st.vals||q.terms.map(()=>-1);const rows=[];
-  q.terms.forEach((t,i)=>{const r=document.createElement('div');r.className='dm-row';r.innerHTML='<div class="dm-term">'+t+'</div>';const sel=document.createElement('select');sel.className='dm-select';sel.innerHTML='<option value="-1">Choose...</option>'+q.opts.map((x,k)=>'<option value="'+k+'">'+x+'</option>').join('');sel.value=st.vals[i];sel.onchange=()=>{st.vals[i]=+sel.value;if(o.onChange)o.onChange(st);};r.appendChild(sel);body.appendChild(r);rows.push([r,sel]);});
+  st.vals=st.vals||q.terms.map(()=>-1);const rows=[];if(!st.mperm){const mk=()=>{const a=q.opts.map((_,i)=>i);for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};let p=mk(),tr=0;while(tr<80&&q.c.some((cv,i)=>p[i]===cv)){p=mk();tr++;}st.mperm=p;}
+  q.terms.forEach((t,i)=>{const r=document.createElement('div');r.className='dm-row';r.innerHTML='<div class="dm-term">'+t+'</div>';const sel=document.createElement('select');sel.className='dm-select';sel.innerHTML='<option value="-1">Choose...</option>'+st.mperm.map(k=>'<option value="'+k+'">'+q.opts[k]+'</option>').join('');sel.value=st.vals[i];sel.onchange=()=>{st.vals[i]=+sel.value;if(o.onChange)o.onChange(st);};r.appendChild(sel);body.appendChild(r);rows.push([r,sel]);});
   let cb=null;const grade=()=>{graded=true;rows.forEach(([r,sel],i)=>{sel.disabled=true;const ok=st.vals[i]===q.c[i];r.classList.add(ok?'dm-correct':'dm-wrong');if(!ok){const n=document.createElement('div');n.style.cssText='flex:1 1 100%;font-size:.8rem';n.innerHTML='<b>Answer:</b> '+q.opts[q.c[i]];r.appendChild(n);}});if(cb)cb.style.display='none';finish(isCorrect(q,st));};
   if(o.instant!==false&&!locked){cb=document.createElement('button');cb.className='submit-multi';cb.textContent='Check answers';cb.onclick=()=>{if(!graded&&st.vals.every(v=>v>=0))grade();else if(!graded)toast('Answer every row first');};body.appendChild(cb);}
   if(o.reveal||locked)grade();
